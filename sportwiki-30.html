@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportWiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f2f5;--card:#fff;--border:#e8eaef;--accent:#e63946;--green:#16a34a;--blue:#1d6fa4;--orange:#d97706;--text:#111827;--muted:#6b7280;--sub:#374151;--live:#dc2626;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;min-height:100vh;}
+header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.hdr{max-width:700px;margin:0 auto;padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#e63946,#ff6b00);display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue";font-size:17px;color:#fff;}
+.logo-name{font-family:"Bebas Neue";font-size:22px;letter-spacing:2px;color:#111827;}
+.logo-tag{font-size:8px;color:#e63946;font-weight:700;letter-spacing:1.5px;margin-top:1px;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.live-pill{display:none;align-items:center;gap:5px;background:#fff0f0;border:1px solid #fecaca;border-radius:20px;padding:4px 10px;font-size:11px;color:var(--live);font-weight:700;cursor:pointer;}
+.ldot{width:6px;height:6px;background:var(--live);border-radius:50%;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.nbell{width:32px;height:32px;background:#fff;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;position:relative;}
+.nbadge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--accent);border-radius:50%;border:1.5px solid #fff;display:none;}
+#livebanner{display:none;background:#fff;border-bottom:2px solid var(--live);padding:10px 14px;}
+.lbhdr{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.lbhdr-txt{font-size:11px;font-weight:800;color:var(--live);letter-spacing:1.5px;text-transform:uppercase;}
+.lbscroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
+.lbscroll::-webkit-scrollbar{display:none;}
+.lbcard{background:#fff5f5;border:1px solid #fecaca;border-left:3px solid var(--live);border-radius:10px;padding:8px 12px;min-width:210px;cursor:pointer;flex-shrink:0;}
+.lbcard:active{background:#fee2e2;}
+.lbsport{font-size:9px;font-weight:800;color:var(--live);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.lbmatch{font-size:13px;font-weight:700;color:var(--text);}
+.lbsc{color:var(--live);font-family:"Bebas Neue";font-size:15px;margin:0 3px;}
+.lbsr{font-size:10px;color:var(--muted);margin-top:2px;}
+.swrap{padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);position:relative;}
+.sbox{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:9px 14px;transition:all .2s;}
+.sbox:focus-within{border-color:var(--accent);background:#fff;}
+.sinput{flex:1;border:none;background:transparent;font-size:14px;color:var(--text);font-family:"Inter";outline:none;}
+.sinput::placeholder{color:var(--muted);}
+.sclear{font-size:14px;color:var(--muted);cursor:pointer;display:none;}
+.sugg{position:absolute;left:14px;right:14px;top:100%;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:300;display:none;max-height:280px;overflow-y:auto;}
+.sugg-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);}
+.sugg-item:last-child{border-bottom:none;}
+.sugg-item:active{background:var(--bg);}
+.sresults{margin-top:10px;display:none;}
+.sr-sec{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:4px 0 6px;}
+.sr-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;cursor:pointer;border:1px solid var(--border);}
+.sr-card:active{background:#f3f4f6;}
+.sr-nm{font-size:14px;font-weight:700;color:var(--text);}
+.sr-info{font-size:11px;color:var(--muted);}
+.sr-empty{text-align:center;padding:24px;color:var(--muted);font-size:13px;}
+.sports-nav{background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:54px;z-index:199;}
+.sports-nav::-webkit-scrollbar{display:none;}
+.nav-inner{display:flex;padding:0 10px;max-width:700px;margin:0 auto;}
+.sport-btn{display:flex;align-items:center;gap:4px;padding:10px 12px;border:none;border-bottom:2.5px solid transparent;background:transparent;color:var(--muted);font-family:"Inter";font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.sport-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+main{max-width:700px;margin:0 auto;padding:12px 12px 50px;}
+.date-hdr{font-size:14px;font-weight:700;color:var(--text);padding:10px 2px 8px;}
+.mgroup{background:#fff;border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);}
+.sbar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px 7px;}
+.snm{font-size:11px;color:var(--muted);font-weight:600;}
+.nstar{font-size:16px;cursor:pointer;opacity:.5;}
+.nstar.on{opacity:1;}
+.mrow{display:flex;align-items:stretch;cursor:pointer;border-top:1px solid var(--border);transition:background .15s;}
+.mrow:active{background:var(--bg);}
+.tcol{flex:1;padding:11px 14px;display:flex;flex-direction:column;justify-content:center;gap:9px;}
+.tr{display:flex;align-items:center;gap:9px;}
+.flg{width:24px;height:24px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--border);}
+.tnm{font-size:14px;font-weight:600;color:var(--text);}
+.tsc{font-size:11px;font-weight:700;margin-left:auto;color:var(--sub);text-align:right;max-width:130px;}
+.vd{width:1px;background:var(--border);flex-shrink:0;margin:10px 0;}
+.scol{width:100px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;gap:2px;}
+.cdlbl{font-size:10px;color:var(--muted);font-weight:500;}
+.cdval{font-size:15px;font-weight:700;color:var(--orange);font-family:"JetBrains Mono";text-align:center;}
+.livebdg{font-size:11px;font-weight:800;color:var(--live);animation:blink 1s infinite;}
+.ftlbl{font-size:11px;color:var(--muted);font-weight:600;text-align:center;}
+.datelbl{font-size:11px;color:var(--blue);font-weight:600;text-align:center;line-height:1.4;}
+.morebtn{padding:8px 14px 9px;font-size:13px;color:var(--blue);font-weight:700;cursor:pointer;border-top:1px solid var(--border);}
+.nhdr{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:14px 2px 8px;}
+.ncard{background:#fff;border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer;border:1px solid var(--border);}
+.ncard:active{background:var(--bg);}
+.nsrc{display:inline-block;font-size:10px;font-weight:800;color:var(--accent);background:#fff5f5;border-radius:4px;padding:2px 7px;margin-bottom:7px;}
+.nttl{font-size:14px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:5px;}
+.ndsc{font-size:12px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:7px;}
+.nft{font-size:11px;color:var(--muted);}
+.schbtn-wrap{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px 0;}
+.schbtn-wrap::-webkit-scrollbar{display:none;}
+.schbtn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:"Inter";}
+.schbtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.schyear{font-family:"Bebas Neue";font-size:22px;letter-spacing:2px;color:var(--text);padding:14px 0 6px;border-bottom:2px solid var(--accent);margin-bottom:10px;}
+.schcard{background:#fff;border-radius:12px;padding:13px 14px;margin-bottom:8px;border:1px solid var(--border);}
+.schtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.schtag{font-size:10px;font-weight:800;color:#fff;padding:2px 8px;border-radius:4px;}
+.schimp{font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;}
+.sch-mega{background:#fce7f3;color:#9d174d;}
+.sch-major{background:#fef3c7;color:#92400e;}
+.schnm{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.schinfo{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.schresult{font-size:12px;color:var(--green);font-weight:700;margin-bottom:4px;}
+.schdesc{font-size:12px;color:var(--muted);line-height:1.5;}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;display:none;align-items:flex-end;}
+.mbg.open{display:flex;}
+.msheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease;padding-bottom:50px;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mgrip{padding:12px 0 0;display:flex;justify-content:center;}
+.mgrip-bar{width:36px;height:4px;background:#e5e7eb;border-radius:2px;}
+.mcrow{display:flex;justify-content:flex-end;padding:8px 14px 0;}
+.mx{background:var(--bg);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:700;}
+.md-series{font-size:11px;color:var(--muted);font-weight:600;padding:0 16px 8px;}
+.md-srow{display:flex;justify-content:center;margin-bottom:14px;}
+.md-live{background:#fef2f2;color:var(--live);border:1px solid #fecaca;font-size:11px;font-weight:800;padding:3px 14px;border-radius:20px;animation:blink 1s infinite;}
+.md-upcoming{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;font-size:11px;font-weight:800;padding:3px 14px;border-radius:20px;}
+.md-ft{background:#f9fafb;color:var(--muted);border:1px solid var(--border);font-size:11px;font-weight:800;padding:3px 14px;border-radius:20px;}
+.md-sb{display:flex;align-items:center;justify-content:space-between;padding:0 16px 16px;gap:8px;}
+.md-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
+.md-flag{width:54px;height:54px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;}
+.md-tnm{font-size:13px;font-weight:700;color:var(--text);}
+.md-sc{font-family:"Bebas Neue";font-size:24px;color:var(--text);}
+.md-vs{font-family:"Bebas Neue";font-size:20px;color:var(--muted);}
+.md-cd{font-family:"JetBrains Mono";font-size:18px;font-weight:700;color:var(--orange);text-align:center;}
+.md-sec{margin:0 12px 10px;background:var(--bg);border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.md-sec-t{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);background:#fff;}
+.md-row{display:flex;align-items:flex-start;justify-content:space-between;padding:9px 14px;border-bottom:1px solid rgba(232,234,239,.6);}
+.md-row:last-child{border-bottom:none;}
+.md-lbl{font-size:12px;color:var(--muted);font-weight:500;}
+.md-val{font-size:13px;color:var(--text);font-weight:600;text-align:right;max-width:58%;}
+.h2h-wrap{padding:12px 14px;}
+.h2h-names{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;font-weight:700;}
+.h2h-bar{height:8px;border-radius:4px;background:#f3f4f6;display:flex;overflow:hidden;margin-bottom:6px;}
+.h2h-home{background:var(--blue);}
+.h2h-draw{background:#d1d5db;}
+.h2h-away{background:var(--orange);}
+.h2h-nums{display:flex;justify-content:space-between;font-size:13px;font-weight:700;}
+.prow{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(232,234,239,.6);}
+.prow:last-child{border-bottom:none;}
+.prank{width:18px;font-size:11px;color:var(--muted);font-weight:700;}
+.pname{font-size:13px;font-weight:700;color:var(--text);}
+.pteam{font-size:11px;color:var(--muted);}
+.pstat{font-size:13px;font-weight:700;color:var(--accent);margin-left:auto;}
+.cbox{margin:0 12px 10px;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.chdr{background:#fff;padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.chdr-t{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.clist{background:var(--bg);max-height:200px;overflow-y:auto;padding:8px 12px;}
+.citem{background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:1px solid var(--border);}
+.citem:last-child{margin-bottom:0;}
+.cover{font-size:10px;color:var(--accent);font-weight:700;margin-bottom:3px;}
+.ctxt{font-size:13px;color:var(--text);line-height:1.45;}
+.cinp-wrap{background:#fff;padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.cinp{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:"Inter";outline:none;color:var(--text);}
+.cinp:focus{border-color:var(--accent);}
+.csend{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+.ntf-modal{padding:20px 16px;}
+.ntf-hdr{font-family:"Bebas Neue";font-size:26px;color:var(--text);margin-bottom:16px;}
+.ntf-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border-radius:10px;margin-bottom:8px;border:1px solid var(--border);}
+.ntf-label{font-size:14px;font-weight:600;color:var(--text);}
+.ntf-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.toggle{width:44px;height:24px;background:#d1d5db;border-radius:12px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--green);}
+.tdot{width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.on .tdot{left:22px;}
+.wiki-hero{padding:20px 16px 16px;}
+.wiki-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.wiki-flag{width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#fff5f5,#ffe8e8);border:2px solid #fecaca;display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;}
+.wiki-name{font-family:"Bebas Neue";font-size:30px;color:var(--text);letter-spacing:1px;line-height:1;}
+.wiki-sport{display:inline-block;font-size:11px;font-weight:800;color:var(--accent);background:#fff5f5;border-radius:4px;padding:2px 8px;margin:4px 0 2px;text-transform:uppercase;}
+.wiki-bio{font-size:14px;line-height:1.75;color:var(--sub);background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border);margin-bottom:12px;}
+.wiki-sec{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.wiki-tl{border-left:2px solid var(--border);margin-left:8px;padding-left:14px;}
+.wiki-tl-item{position:relative;margin-bottom:14px;}
+.wiki-tl-item::before{content:"";position:absolute;left:-19px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid #fff;}
+.wiki-year{font-size:11px;font-weight:800;color:var(--accent);font-family:"JetBrains Mono";}
+.wiki-text{font-size:13px;color:var(--text);line-height:1.5;margin-top:2px;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;pointer-events:none;}
+footer{text-align:center;padding:18px 16px 40px;color:var(--muted);font-size:11px;border-top:1px solid var(--border);margin-top:8px;background:#fff;}
+.ticker-wrap{background:linear-gradient(90deg,#b91c1c,#e63946);overflow:hidden;height:26px;display:none;align-items:center;}
+.ticker-lbl{background:rgba(0,0,0,.25);padding:0 12px;font-family:"Bebas Neue";font-size:11px;letter-spacing:2px;color:#fff;height:100%;display:flex;align-items:center;white-space:nowrap;flex-shrink:0;}
+.ticker-inner{overflow:hidden;flex:1;}
+.ticker-track{display:flex;animation:ticker 35s linear infinite;white-space:nowrap;}
+.ticker-item{padding:0 22px;font-size:11px;font-weight:600;color:#fff;}
+.ticker-item::after{content:"·";margin-left:22px;opacity:.5;}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:500;box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 12px;border-radius:10px;transition:all .15s;flex:1;}
+.bn-item:active{background:var(--bg);}
+.bn-icon{font-size:22px;line-height:1;}
+.bn-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.3px;}
+.bn-item.active .bn-label{color:var(--accent);}
+.bn-item.active .bn-icon{transform:scale(1.1);}
+.bn-center{position:relative;margin-top:-20px;}
+.bn-center-inner{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#e63946,#ff6b00);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(230,57,70,.4);cursor:pointer;}
+.bn-center-icon{font-size:24px;}
+main{padding-bottom:80px!important;}
+</style>
+</head>
+<body>
+<div id="livebanner"></div>
+<div class="ticker-wrap" id="ticker-wrap">
+  <div class="ticker-lbl">LIVE</div>
+  <div class="ticker-inner"><div class="ticker-track" id="ticker-track"></div></div>
+</div>
+<header>
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-icon">SW</div>
+      <div><div class="logo-name">SportWiki</div><div class="logo-tag">WATCH IT · KNOW IT</div></div>
+    </div>
+    <div class="hdr-right">
+      <div class="live-pill" id="livepill" onclick="scrollToLive()">
+        <div class="ldot"></div><span id="livecount">0 Live</span>
+      </div>
+      <div class="nbell" onclick="openNotif()">🔔<div class="nbadge" id="nbadge"></div></div>
+    </div>
+  </div>
+</header>
+<div class="swrap">
+  <div class="sbox">
+    <span style="font-size:15px;color:var(--muted)">🔍</span>
+    <input class="sinput" id="sinput" type="text" placeholder="Search player, team, sport..." oninput="onSearch(this.value)" autocomplete="off" spellcheck="false">
+    <span class="sclear" id="sclear" onclick="clearSearch()">✕</span>
+  </div>
+  <div class="sugg" id="sugg"></div>
+  <div class="sresults" id="sresults"></div>
+</div>
+<div class="sports-nav">
+  <div class="nav-inner">
+    <button class="sport-btn active" onclick="go('all')" data-s="all">🌍 ALL</button>
+    <button class="sport-btn" onclick="go('Cricket')" data-s="Cricket">🏏 CRICKET</button>
+    <button class="sport-btn" onclick="go('Soccer')" data-s="Soccer">⚽ FOOTBALL</button>
+    <button class="sport-btn" onclick="go('Tennis')" data-s="Tennis">🎾 TENNIS</button>
+    <button class="sport-btn" onclick="go('Basketball')" data-s="Basketball">🏀 BASKETBALL</button>
+    <button class="sport-btn" onclick="go('Baseball')" data-s="Baseball">⚾ BASEBALL</button>
+    <button class="sport-btn" onclick="go('Hockey')" data-s="Hockey">🏒 HOCKEY</button>
+    <button class="sport-btn" onclick="go('Rugby')" data-s="Rugby">🏉 RUGBY</button>
+    <button class="sport-btn" onclick="go('F1')" data-s="F1">🏎️ F1</button>
+    <button class="sport-btn" onclick="go('Olympics')" data-s="Olympics">🥇 OLYMPICS</button>
+    <button class="sport-btn" onclick="go('news')" data-s="news">📰 NEWS</button>
+    <button class="sport-btn" onclick="go('schedule')" data-s="schedule">📅 SCHEDULE</button>
+  </div>
+</div>
+<main><div id="root"></div></main>
+<footer><span style="color:var(--accent);font-family:Bebas Neue;font-size:14px;letter-spacing:2px">SportWiki</span> · Watch It · Know It · Live It</footer>
+<div class="mbg" id="mbg" onclick="bgClick(event)">
+  <div class="msheet">
+    <div class="mgrip"><div class="mgrip-bar"></div></div>
+    <div class="mcrow"><div class="mx" onclick="closeModal()">✕</div></div>
+    <div id="mbody"></div>
+  </div>
+</div>
+<script>
+
+var TODAY = new Date('2026-06-10');
+var curSport = 'all', expanded = {}, notifs = {}, schEra = 'future', schSp = 'All';
+
+var M = {
+  Cricket:[
+    {sr:"India vs England - 1st Test 2026",ms:[
+      {h:"India",a:"England",hf:"🇮🇳",af:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",st:"live",hs:"324/6 (90 ov)",as:"42/1 (12 ov)",
+       d:{venue:"Trent Bridge, Nottingham",time:"LIVE Day 2",date:"10 June 2026",fmt:"Test Match",
+         h2h:{hw:33,dr:16,aw:50,t:99},
+         perf:[{n:"Rohit Sharma",tm:"India",s:"Batting: 98* overnight"},{n:"Jofra Archer",tm:"England",s:"1/45 off 12 overs"}],
+         prev:"India 324/6 overnight - Rohit on 98*! England need his wicket urgently on Day 2.",
+         comm:[{o:"Day 2 Over 12",t:"Rohit survives Archer - still on 98*! India 366/6."},{o:"End Day 1",t:"India 324/6. Rohit 98*, Washington Sundar 34*. Brilliant day for India!"}]}}
+    ]},
+    {sr:"Afghanistan vs Bangladesh - T20I 2026",ms:[
+      {h:"Afghanistan",a:"Bangladesh",hf:"🇦🇫",af:"🇧🇩",st:"live",hs:"178/5 (20 ov)",as:"67/3 (11.2 ov)",
+       d:{venue:"Sharjah Cricket Stadium",time:"LIVE - Bangladesh 12th over",date:"10 June 2026",fmt:"T20I",
+         h2h:{hw:8,dr:0,aw:4,t:12},
+         perf:[{n:"R. Gurbaz",tm:"Afghanistan",s:"Match: 82 off 51 balls"},{n:"Rashid Khan",tm:"Afghanistan",s:"1/18 off 3 overs"},{n:"Litton Das",tm:"Bangladesh",s:"38* off 28 balls"}],
+         prev:"Afghanistan 178/5 with Gurbaz 82 the star. Bangladesh need 112 from 51 balls.",
+         comm:[{o:"11.2",t:"WICKET! Rashid removes Shakib - Bangladesh 67/3"},{o:"8.0",t:"Litton hits 2 sixes off Mujeeb - Bangladesh 51/2"},{o:"Innings Break",t:"Gurbaz 82 off 51 - Afghanistan 178/5. Big target!"}]}}
+    ]},
+    {sr:"IPL 2026 - Final",ms:[
+      {h:"Mumbai Indians",a:"RCB",hf:"🔵",af:"🔴",st:"upcoming",ms2:new Date('2026-06-15T14:00:00Z').getTime(),
+       d:{venue:"Narendra Modi Stadium, Ahmedabad",time:"7:30 PM IST, 15 June",date:"15 June 2026",fmt:"IPL 2026 Final",
+         h2h:{hw:19,dr:0,aw:16,t:35},
+         perf:[{n:"Rohit Sharma",tm:"MI",s:"Tournament: 567 runs"},{n:"Virat Kohli",tm:"RCB",s:"Tournament: 612 runs"},{n:"Jasprit Bumrah",tm:"MI",s:"Tournament: 22 wickets"}],
+         prev:"THE IPL Final! Rohit vs Kohli. MI dynasty vs RCB hunger. This is the biggest game in Indian cricket.",
+         comm:[{o:"Preview",t:"MI won 3 of last 4 IPL finals. RCB won in 2025 - can they defend their title?"},{o:"Pitch Report",t:"Flat Ahmedabad pitch. Dew factor 2nd innings - winning toss crucial."}]}}
+    ]},
+    {sr:"Pakistan vs New Zealand - ODI Series",ms:[
+      {h:"Pakistan",a:"New Zealand",hf:"🇵🇰",af:"🇳🇿",st:"finished",hs:"287/8 (50)",as:"241/10 (46.2)",
+       d:{venue:"National Stadium, Karachi",time:"Completed",date:"8 June 2026",fmt:"ODI - 2nd Match",
+         result:"Pakistan won by 46 runs",
+         h2h:{hw:22,dr:0,aw:18,t:40},
+         perf:[{n:"Babar Azam",tm:"Pakistan",s:"91 off 103 balls"},{n:"Shaheen Afridi",tm:"Pakistan",s:"4 wickets for 38 runs"}],
+         prev:"Pakistan dominated. Babar 91 built the platform, Shaheen 4-fer sealed it.",
+         comm:[{o:"46.2",t:"MATCH OVER! Pakistan win by 46 runs. Shaheen takes his 4th!"},{o:"Innings Break",t:"Pakistan 287/8. Babar 91 the highlight."}]}}
+    ]}
+  ],
+  Soccer:[
+    {sr:"UEFA Champions League Final 2026",ms:[
+      {h:"Real Madrid",a:"Arsenal",hf:"⚪",af:"🔴",st:"upcoming",ms2:new Date('2026-06-13T15:30:00Z').getTime(),
+       d:{venue:"Allianz Arena, Munich",time:"9:00 PM IST - 13 June",date:"13 June 2026",fmt:"UCL Final",
+         h2h:{hw:6,dr:3,aw:4,t:13},
+         perf:[{n:"Vinicius Jr",tm:"Real Madrid",s:"Tournament: 11 goals"},{n:"Bukayo Saka",tm:"Arsenal",s:"Tournament: 9 goals"},{n:"Jude Bellingham",tm:"Real Madrid",s:"Tournament: 8 assists"}],
+         prev:"Real Madrid vs Arsenal in Munich! Arsenal's first UCL final since 2006. Vinicius vs Saka - battle of the wingers.",
+         comm:[{o:"Preview",t:"Madrid won 4 of last 5 UCL Finals. But Arsenal are flying this season."},{o:"Team News",t:"Both squads fully fit. Bellingham passed late fitness test."}]}}
+    ]},
+    {sr:"India qualify for FIFA World Cup 2026!",ms:[
+      {h:"India",a:"Bahrain",hf:"🇮🇳",af:"🇧🇭",st:"finished",hs:"2",as:"1",
+       d:{venue:"Salt Lake Stadium, Kolkata",time:"Completed",date:"7 June 2026",fmt:"WC 2026 Qualifier",
+         result:"🎉 INDIA QUALIFY FOR FIFA WORLD CUP 2026!",
+         h2h:{hw:3,dr:1,aw:2,t:6},
+         perf:[{n:"Sunil Chhetri",tm:"India",s:"Farewell goal - legendary exit!"},{n:"Manvir Singh",tm:"India",s:"78th minute winner"},{n:"Gurpreet Singh",tm:"India",s:"8 saves - Man of Match"}],
+         prev:"HISTORIC! India qualified for the FIFA World Cup 2026 for the first time EVER! Chhetri farewell goal. Salt Lake Stadium will never forget this night.",
+         comm:[{o:"90+3",t:"FULL TIME! INDIA ARE GOING TO THE WORLD CUP! Historic night in Kolkata!"},{o:"78'",t:"MANVIR SINGH! India 2-1! Salt Lake Stadium ERUPTS!"},{o:"45'",t:"HALF TIME: Chhetri farewell goal gives India 1-0 lead!"}]}}
+    ]},
+    {sr:"Premier League 2025-26 Champions",ms:[
+      {h:"Arsenal",a:"Everton",hf:"🔴",af:"🔵",st:"finished",hs:"3",as:"1",
+       d:{venue:"Emirates Stadium",time:"Completed",date:"7 June 2026",fmt:"Premier League Final Day",
+         result:"Arsenal - PREMIER LEAGUE CHAMPIONS 2025-26!",
+         h2h:{hw:18,dr:8,aw:6,t:32},
+         perf:[{n:"Bukayo Saka",tm:"Arsenal",s:"Hat-trick! Season total: 28 goals"},{n:"M. Odegaard",tm:"Arsenal",s:"Season: 22 assists"}],
+         prev:"Arsenal back-to-back champions! Saka hat-trick sealed it at a roaring Emirates.",
+         comm:[{o:"90'",t:"FULL TIME! Arsenal are CHAMPIONS! Back-to-back Premier League titles!"},{o:"67'",t:"SAKA HAT-TRICK! Emirates goes absolutely WILD!"}]}}
+    ]}
+  ],
+  Tennis:[
+    {sr:"Roland Garros 2026 - Men's Final",ms:[
+      {h:"C. Alcaraz",a:"J. Sinner",hf:"🇪🇸",af:"🇮🇹",st:"upcoming",ms2:new Date('2026-06-12T09:30:00Z').getTime(),
+       d:{venue:"Court Philippe-Chatrier, Paris",time:"6:30 PM IST - 12 June",date:"12 June 2026",fmt:"Roland Garros Final - Best of 5",
+         h2h:{hw:8,dr:0,aw:7,t:15},
+         perf:[{n:"C. Alcaraz",tm:"Spain",s:"Tournament: 0 sets dropped"},{n:"J. Sinner",tm:"Italy",s:"Tournament: 1 set dropped vs Djokovic"}],
+         prev:"THE Roland Garros Final! Alcaraz vs Sinner. H2H 8-7 to Alcaraz. Alcaraz hasn't dropped a set this fortnight - absolutely dominant.",
+         comm:[{o:"Preview",t:"Alcaraz 5 consecutive straight-sets wins. Looks ominous."},{o:"Weather",t:"Perfect Paris conditions. Court sold out weeks ago."}]}}
+    ]},
+    {sr:"Roland Garros 2026 - Women's Final",ms:[
+      {h:"I. Swiatek",a:"C. Gauff",hf:"🇵🇱",af:"🇺🇸",st:"finished",hs:"6-2",as:"7-5",
+       d:{venue:"Court Philippe-Chatrier, Paris",time:"Completed",date:"8 June 2026",fmt:"Roland Garros Women's Final",
+         result:"Swiatek wins 6-2, 7-5 - Record 7th Roland Garros title!",
+         h2h:{hw:8,dr:0,aw:3,t:11},
+         perf:[{n:"I. Swiatek",tm:"Poland",s:"38 winners, barely tested"},{n:"C. Gauff",tm:"USA",s:"Fought hard in 2nd set - 5 aces"}],
+         prev:"Swiatek wins her SEVENTH Roland Garros title. A record that will stand forever. The Queen of Clay.",
+         comm:[{o:"Final",t:"SWIATEK WINS 6-2 7-5! SEVEN Roland Garros titles! Unbelievable!"},{o:"2nd Set 7-5",t:"Swiatek breaks at 6-5 and holds to love. Takes her 7th title!"}]}}
+    ]},
+    {sr:"ATP Queen's Club - Quarterfinals",ms:[
+      {h:"C. Alcaraz",a:"T. Paul",hf:"🇪🇸",af:"🇺🇸",st:"upcoming",ms2:new Date('2026-06-16T08:30:00Z').getTime(),
+       d:{venue:"Queen's Club, London",time:"2:00 PM IST - 16 June",date:"16 June 2026",fmt:"ATP 500 QF - Grass",
+         h2h:{hw:3,dr:0,aw:1,t:4},
+         perf:[{n:"C. Alcaraz",tm:"Spain",s:"Grass record 2026: 8-0"},{n:"T. Paul",tm:"USA",s:"Grass record 2026: 6-2"}],
+         prev:"Alcaraz heads straight to grass after RG Final. Paul dangerous with his big serve on fast surfaces.",
+         comm:[{o:"Preview",t:"First grass match for Alcaraz this season. Should be no issue adapting."}]}},
+      {h:"J. Sinner",a:"H. Hurkacz",hf:"🇮🇹",af:"🇵🇱",st:"upcoming",ms2:new Date('2026-06-16T10:30:00Z').getTime(),
+       d:{venue:"Queen's Club, London",time:"4:00 PM IST - 16 June",date:"16 June 2026",fmt:"ATP 500 QF - Grass",
+         h2h:{hw:4,dr:0,aw:3,t:7},
+         perf:[{n:"J. Sinner",tm:"Italy",s:"Grass record 2026: 5-1"},{n:"H. Hurkacz",tm:"Poland",s:"Grass record 2026: 7-0 this season"}],
+         prev:"Hurkacz is the king of grass right now - 7 wins from 7. His serve is almost unreturnable on fast courts.",
+         comm:[{o:"Preview",t:"Hurkacz won Queen's in 2021. Sinner improving on grass significantly."}]}}
+    ]}
+  ],
+  Basketball:[
+    {sr:"NBA Finals 2026 - Game 5",ms:[
+      {h:"Boston Celtics",a:"OKC Thunder",hf:"🟢",af:"🔵",st:"live",hs:"87",as:"79",
+       d:{venue:"TD Garden, Boston",time:"LIVE - 4th Quarter 7:23 left",date:"10 June 2026",fmt:"NBA Finals Best of 7 - Series 2-2",
+         h2h:{hw:3,dr:0,aw:2,t:5},
+         perf:[{n:"Jayson Tatum",tm:"Boston",s:"Game: 28 pts 11 reb"},{n:"SGA",tm:"OKC",s:"Game: 24 pts 8 ast"},{n:"Jaylen Brown",tm:"Boston",s:"Game: 19 pts"}],
+         prev:"Celtics lead 87-79! Tatum sensational with 28 points. Celtics could go 3-2 in the series tonight.",
+         comm:[{o:"Q4 7:23",t:"TATUM AND-ONE! Celtics 87-79! TD Garden going absolutely CRAZY!"},{o:"Half Time",t:"Celtics 51-44 at break. Tatum 18 pts first half."}]}}
+    ]}
+  ],
+  Baseball:[
+    {sr:"MLB 2026 - Yankees vs Red Sox",ms:[
+      {h:"NY Yankees",a:"Boston Red Sox",hf:"⚾",af:"🔴",st:"live",hs:"6",as:"4",
+       d:{venue:"Yankee Stadium, New York",time:"LIVE - 8th Inning",date:"10 June 2026",fmt:"MLB Regular Season",
+         h2h:{hw:1289,dr:0,aw:1251,t:2540},
+         perf:[{n:"Aaron Judge",tm:"Yankees",s:"Game: 2 HR 4 RBI - his 27th and 28th"},{n:"Shohei Ohtani",tm:"Yankees",s:"Game: 1 HR - his 33rd of 2026"}],
+         prev:"Judge with 2 bombs! Yankees 6-4 in the 8th. Baseball's greatest rivalry delivering again tonight.",
+         comm:[{o:"8th Inning",t:"JUDGE 2nd HOMER! Yankees 6-4! His 28th of the season!"},{o:"3rd Inning",t:"OHTANI GOES DEEP! His 33rd of 2026! Yankees 4-1."}]}}
+    ]},
+    {sr:"MLB 2026 - Dodgers vs Giants",ms:[
+      {h:"LA Dodgers",a:"SF Giants",hf:"🔵",af:"🟠",st:"upcoming",ms2:new Date('2026-06-10T16:40:00Z').getTime(),
+       d:{venue:"Dodger Stadium, Los Angeles",time:"10:10 PM IST tonight",date:"10 June 2026",fmt:"MLB Regular Season",
+         h2h:{hw:1156,dr:0,aw:1089,t:2245},
+         perf:[{n:"Shohei Ohtani",tm:"Dodgers",s:"PITCHING AND batting tonight! 33 HR season"},{n:"Matt Chapman",tm:"Giants",s:"Season batting avg: .302"}],
+         prev:"Ohtani PITCHING and batting tonight - baseball's greatest spectacle. Giants won last 3 head-to-heads.",
+         comm:[{o:"Preview",t:"Ohtani on the mound for first time at Dodger Stadium this season!"}]}}
+    ]}
+  ],
+  Hockey:[
+    {sr:"NHL Stanley Cup Final - Game 7",ms:[
+      {h:"Edmonton Oilers",a:"Florida Panthers",hf:"🛢️",af:"🐾",st:"upcoming",ms2:new Date('2026-06-11T14:30:00Z').getTime(),
+       d:{venue:"Rogers Place, Edmonton",time:"8:00 PM IST - 11 June",date:"11 June 2026",fmt:"NHL Stanley Cup Final - GAME 7",
+         h2h:{hw:2,dr:0,aw:3,t:5},
+         perf:[{n:"Connor McDavid",tm:"Oilers",s:"Series: 13 pts - 5 goals 8 assists"},{n:"Leon Draisaitl",tm:"Oilers",s:"Series: 10 pts"},{n:"M. Tkachuk",tm:"Panthers",s:"Series: 11 pts - OT winner in G6"}],
+         prev:"GAME 7! Panthers lead 3-2. Oilers at home in Rogers Place. McDavid needs the performance of his life.",
+         comm:[{o:"Preview",t:"Oilers 4-1 at home this playoffs. Rogers Place will be the loudest building in NHL history."},{o:"McDavid",t:"13 series points and still no Cup. Tonight he delivers or the dream dies."}]}}
+    ]},
+    {sr:"NHL - Game 6 Result",ms:[
+      {h:"Florida Panthers",a:"Edmonton Oilers",hf:"🐾",af:"🛢️",st:"finished",hs:"4",as:"3",
+       d:{venue:"Amerant Bank Arena, Florida",time:"Completed",date:"8 June 2026",fmt:"Stanley Cup Final - OT",
+         result:"Panthers win 4-3 OT - Lead series 3-2",
+         h2h:{hw:3,dr:0,aw:2,t:5},
+         perf:[{n:"M. Tkachuk",tm:"Panthers",s:"OT winner! 2 goals 1 assist"},{n:"Connor McDavid",tm:"Oilers",s:"Tied it 3-3 with 2 minutes left!"}],
+         prev:"Tkachuk OT winner! Panthers lead 3-2. McDavid tied it at 3-3 with 2:14 remaining - heartbreak for Oilers. Game 7 in Edmonton.",
+         comm:[{o:"OT 4:23",t:"TKACHUK! PANTHERS WIN 4-3 IN OT! Series lead 3-2!"},{o:"58:46",t:"McDAVID TIES IT 3-3! Rogers erupts - we are going to overtime!"}]}}
+    ]}
+  ],
+  Rugby:[
+    {sr:"Super Rugby Pacific 2026 - Final",ms:[
+      {h:"Blues",a:"Chiefs",hf:"🔵",af:"🔴",st:"upcoming",ms2:new Date('2026-06-14T03:35:00Z').getTime(),
+       d:{venue:"Eden Park, Auckland",time:"9:05 AM IST - 14 June",date:"14 June 2026",fmt:"Super Rugby Pacific Final",
+         h2h:{hw:45,dr:2,aw:42,t:89},
+         perf:[{n:"Beauden Barrett",tm:"Blues",s:"Season: 198 points"},{n:"Damian McKenzie",tm:"Chiefs",s:"Season: 212 points"}],
+         prev:"All-Black derby final at Eden Park! Barrett vs McKenzie. H2H nearly level - a total coin flip.",
+         comm:[{o:"Preview",t:"Blues won semifinal 28-21 vs Crusaders. Chiefs beat Hurricanes 31-17."}]}}
+    ]}
+  ],
+  F1:[
+    {sr:"F1 Championship 2026 - Current Standings",ms:[
+      {h:"Verstappen 187pts",a:"Norris 163pts",hf:"🇳🇱",af:"🇬🇧",st:"live",hs:"P1",as:"P2",
+       d:{venue:"Season ongoing - Round 9 of 24",time:"After Monaco GP",date:"June 2026",fmt:"F1 World Championship 2026",
+         h2h:{hw:0,dr:0,aw:0,t:0},
+         perf:[{n:"Max Verstappen",tm:"Red Bull",s:"187 pts - Championship Leader"},{n:"Lando Norris",tm:"McLaren",s:"163 pts - 24 points behind"},{n:"Charles Leclerc",tm:"Ferrari",s:"142 pts - P3"},{n:"Lewis Hamilton",tm:"Ferrari",s:"128 pts - P4 debut Ferrari season"}],
+         prev:"Verstappen leads by 24 after Monaco. Hamilton first Ferrari season going well - P4. McLaren closing fast.",
+         comm:[{o:"Monaco GP",t:"Verstappen wins Monaco. Norris P2. Leclerc P3 in home race."},{o:"Miami GP",t:"Norris wins Miami - closes gap to 24 points."}]}}
+    ]},
+    {sr:"F1 - Canadian GP 2026",ms:[
+      {h:"Race - Circuit Gilles Villeneuve",a:"Montreal 🇨🇦",hf:"🏎️",af:"🍁",st:"upcoming",ms2:new Date('2026-06-14T18:00:00Z').getTime(),
+       d:{venue:"Circuit Gilles Villeneuve, Montreal",time:"7:00 PM IST - 14 June",date:"14 June 2026",fmt:"Formula 1 - Canadian Grand Prix",
+         h2h:{hw:0,dr:0,aw:0,t:0},
+         perf:[{n:"Max Verstappen",tm:"Red Bull",s:"Pole - Championship leader"},{n:"Lando Norris",tm:"McLaren",s:"P2 on the grid"},{n:"Lewis Hamilton",tm:"Ferrari",s:"P5 - 7x Canadian GP winner!"}],
+         prev:"Canadian GP! Verstappen on pole. Hamilton returns to the circuit where he won 7 times - now in Ferrari colors!",
+         comm:[{o:"Qualifying",t:"Verstappen pole. Norris P2. Hamilton P5 in Ferrari."},{o:"Weather",t:"Rain possible Sunday - could completely shake up the race!"}]}}
+    ]}
+  ],
+  Olympics:[
+    {sr:"LA 2028 - India Qualification",ms:[
+      {h:"India Athletes",a:"Qualification Ongoing",hf:"🇮🇳",af:"🌍",st:"live",
+       d:{venue:"Various worldwide",time:"Qualification period active",date:"June 2026",fmt:"LA 2028 Olympic Qualification",
+         h2h:{hw:0,dr:0,aw:0,t:0},
+         perf:[{n:"Neeraj Chopra",tm:"India",s:"QUALIFIED - 89.94m PB"},{n:"Mirabai Chanu",tm:"India",s:"QUALIFIED - Asian Record 209kg"},{n:"Manu Bhaker",tm:"India",s:"QUALIFIED - 10m Air Pistol"},{n:"PV Sindhu",tm:"India",s:"Qualification ongoing"}],
+         prev:"India's LA 2028 qualification in full swing. Three stars already qualified. Target 200+ athletes and 15+ medals.",
+         comm:[{o:"June 2026",t:"Chopra throws 89.94m - comfortably qualifies for LA 2028."},{o:"May 2026",t:"Chanu sets Asian record 209kg - automatically qualifies for Olympics."}]}}
+    ]}
+  ]
+};
+
+var NEWS = {
+  Cricket:[
+    {title:"LIVE: Rohit on 98* as India 324/6 vs England at Trent Bridge",desc:"Rohit Sharma is 2 runs from a century overnight as India dominate Day 1. England need early wickets on Day 2 to get back in the game.",source:"ESPNcricinfo",t:Date.now()-1800000},
+    {title:"LIVE: Afghanistan 178/5 vs Bangladesh T20I - Gurbaz 82",desc:"Gurbaz's 82 off 51 balls powered Afghanistan to 178/5. Bangladesh need 112 from 51 balls with Litton Das 38* keeping hope alive.",source:"ICC Cricket",t:Date.now()-900000},
+    {title:"IPL 2026 Final: MI vs RCB on June 15 in Ahmedabad",desc:"The IPL 2026 Final is confirmed! Rohit vs Kohli. MI seek their 6th title, RCB defend their 2025 crown. Bumrah vs Kohli in death overs - the ultimate battle.",source:"IPL",t:Date.now()-7200000},
+    {title:"Pakistan beat New Zealand by 46 runs in Karachi",desc:"Babar's 91 and Shaheen's 4/38 sealed a dominant Pakistan victory in the 2nd ODI.",source:"PCB",t:Date.now()-86400000}
+  ],
+  Soccer:[
+    {title:"UCL Final: Real Madrid vs Arsenal in Munich - 13 June",desc:"Arsenal's first European final since 2006. Vinicius Jr vs Saka is the key battle. Madrid are slight favourites having won 4 of their last 5 UCL finals.",source:"UEFA",t:Date.now()-3600000},
+    {title:"HISTORIC: India qualify for FIFA World Cup 2026!",desc:"India beat Bahrain 2-1 in Kolkata! Chhetri scored in his farewell match. Manvir Singh's 78th minute winner sent Salt Lake Stadium into pure delirium.",source:"AIFF",t:Date.now()-259200000},
+    {title:"Arsenal - Premier League Champions 2025-26",desc:"Saka's hat-trick in a 3-1 win over Everton sealed back-to-back Premier League titles for Arsenal. Their best era since the Invincibles.",source:"Premier League",t:Date.now()-345600000}
+  ],
+  Tennis:[
+    {title:"Roland Garros Final: Alcaraz vs Sinner - Friday 12 June",desc:"H2H 8-7 to Alcaraz. Not dropped a set all tournament. Sinner dropped one vs Djokovic in semis. Paris awaits the match of the year.",source:"ATP Tour",t:Date.now()-3600000},
+    {title:"Swiatek wins 7th Roland Garros - beats Gauff 6-2 7-5",desc:"Seven Roland Garros titles - a record for the ages. The Queen of Clay at her imperious best.",source:"WTA",t:Date.now()-172800000}
+  ],
+  Basketball:[
+    {title:"LIVE: Celtics lead Thunder 87-79 in Q4 - NBA Finals Game 5",desc:"Tatum with 28 points and 11 boards as Celtics lead OKC in the 4th quarter. Celtics could take a 3-2 series lead tonight.",source:"NBA",t:Date.now()-600000}
+  ],
+  Baseball:[
+    {title:"LIVE: Yankees 6-4 Red Sox - 8th Inning, Judge 2 HR",desc:"Aaron Judge hit his 27th and 28th HRs of the season. Ohtani also went deep. Yankees lead in the 8th inning in baseball's greatest rivalry.",source:"MLB",t:Date.now()-1800000}
+  ],
+  Hockey:[
+    {title:"NHL Game 7 TOMORROW: Oilers vs Panthers for the Cup",desc:"Panthers lead 3-2 after Tkachuk's OT winner in Game 6. McDavid's 13 series points haven't been enough yet - Game 7 in Edmonton is his defining moment.",source:"NHL",t:Date.now()-3600000}
+  ],
+  Rugby:[
+    {title:"Super Rugby Final: Blues vs Chiefs at Eden Park - Sunday",desc:"All-Black derby for Super Rugby Pacific title. Barrett vs McKenzie. H2H nearly level - as close as it gets.",source:"Super Rugby",t:Date.now()-7200000}
+  ],
+  F1:[
+    {title:"F1: Verstappen leads by 24 after Monaco - Hamilton P4 in Ferrari debut",desc:"Verstappen extended his lead to 24 over Norris with Monaco win. Hamilton P4 in the championship in his first Ferrari season.",source:"Formula 1",t:Date.now()-172800000}
+  ],
+  Olympics:[
+    {title:"Neeraj, Chanu and Manu Bhaker all qualified for LA 2028",desc:"Three Indians already secured their LA 2028 Olympic spots. Sindhu and others still qualifying. India targeting 200+ athlete contingent.",source:"IOA",t:Date.now()-259200000}
+  ],
+  all:[
+    {title:"June 2026 - The greatest week in sports history",desc:"NBA Finals Game 5 LIVE. Roland Garros Final Friday. UCL Final Saturday. NHL Game 7 Thursday. IPL Final next week. India vs England Test ongoing.",source:"SportWiki",t:Date.now()-3600000}
+  ]
+};
+
+var SCHEDULE = [
+  {sp:"Hockey",e:"🏒",c:"#1e40af",n:"NHL Stanley Cup Final - Game 7",d:"Jun 11, 2026",l:"Edmonton, Canada",i:"mega",era:"future",r:"",desc:"Oilers vs Panthers. McDavid's defining moment?"},
+  {sp:"Tennis",e:"🎾",c:"#ca8a04",n:"Roland Garros Men's Final",d:"Jun 12, 2026",l:"Paris, France",i:"mega",era:"future",r:"",desc:"Alcaraz vs Sinner - the match the world has been waiting for."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"UEFA Champions League Final 2026",d:"Jun 13, 2026",l:"Munich, Germany",i:"mega",era:"future",r:"",desc:"Real Madrid vs Arsenal. Arsenal's first UCL final since 2006."},
+  {sp:"Rugby",e:"🏉",c:"#7c2d12",n:"Super Rugby Pacific Final",d:"Jun 14, 2026",l:"Auckland, New Zealand",i:"major",era:"future",r:"",desc:"Blues vs Chiefs - All-Black derby at Eden Park."},
+  {sp:"F1",e:"🏎️",c:"#dc2626",n:"Canadian Grand Prix 2026",d:"Jun 14, 2026",l:"Montreal, Canada",i:"major",era:"future",r:"",desc:"Verstappen on pole. Hamilton hunting 8th Canada win in Ferrari."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"IPL 2026 Final",d:"Jun 15, 2026",l:"Ahmedabad, India",i:"mega",era:"future",r:"",desc:"MI vs RCB. Rohit vs Kohli. The biggest IPL Final ever."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"T20 World Cup 2026",d:"Jun-Jul 2026",l:"India and Sri Lanka",i:"mega",era:"future",r:"",desc:"India defends T20 WC title on home soil."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"FIFA World Cup 2026",d:"Jun-Jul 2026",l:"USA, Canada and Mexico",i:"mega",era:"future",r:"",desc:"First 48-team World Cup. India's debut! Mbappe, Vinicius, Yamal."},
+  {sp:"Tennis",e:"🎾",c:"#ca8a04",n:"Wimbledon 2026",d:"Jun-Jul 2026",l:"London, UK",i:"mega",era:"future",r:"",desc:"Alcaraz vs Sinner on grass. Djokovic hunting 25th Grand Slam."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"ODI World Cup 2027",d:"Feb-Mar 2027",l:"South Africa and Zimbabwe",i:"mega",era:"future",r:"",desc:"First World Cup in Southern Africa."},
+  {sp:"Rugby",e:"🏉",c:"#7c2d12",n:"Rugby World Cup 2027",d:"Sep-Nov 2027",l:"Australia",i:"mega",era:"future",r:"",desc:"Australia hosts for third time."},
+  {sp:"Olympics",e:"🥇",c:"#d97706",n:"Summer Olympics 2028 - Los Angeles",d:"Jul-Aug 2028",l:"Los Angeles, USA",i:"mega",era:"future",r:"",desc:"Cricket debuts at Olympics! India targets 15+ medals."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"FIFA World Cup 2030",d:"Jun-Jul 2030",l:"Spain, Portugal and Morocco",i:"mega",era:"future",r:"",desc:"Centenary World Cup - 100 years of football's greatest tournament."},
+  {sp:"Olympics",e:"🥇",c:"#d97706",n:"Summer Olympics 2036 - India bidding!",d:"Jul-Aug 2036",l:"India (bidding)",i:"mega",era:"future",r:"",desc:"India's bid for 2036 Olympics could be the nation's greatest sporting moment."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"FIFA World Cup 2050",d:"Jun-Jul 2050",l:"TBC",i:"mega",era:"future",r:"",desc:"50th FIFA World Cup. Possibly 64 teams."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"T20 World Cup 2024",d:"Jun 2024",l:"West Indies and USA",i:"mega",era:"past",r:"India won!",desc:"India's 2nd T20 WC. Bumrah 15 wickets. Kohli 76 in final. Unbeaten throughout."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"IPL 2025",d:"Mar-May 2025",l:"India",i:"major",era:"past",r:"RCB won their first ever title!",desc:"RCB's first ever IPL title after 17 years of heartbreak. Kohli lifts the trophy."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"Cricket World Cup 2023",d:"Oct-Nov 2023",l:"India",i:"mega",era:"past",r:"Australia won - Travis Head 137",desc:"India unbeaten in all league matches but lost the final. Kohli scored 765 runs in the tournament."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"Cricket World Cup 2011",d:"Feb-Apr 2011",l:"India, Sri Lanka and Bangladesh",i:"mega",era:"past",r:"India won - Dhoni 91*",desc:"India's greatest cricket moment. Dhoni's six at Wankhede. Sachin's dream fulfilled."},
+  {sp:"Cricket",e:"🏏",c:"#16a34a",n:"Cricket World Cup 1983",d:"Jun-Jul 1983",l:"England",i:"mega",era:"past",r:"India won - Kapil Dev",desc:"India's miracle. Kapil Dev's unbeaten 175 vs Zimbabwe. Shocking win over West Indies in the final."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"FIFA World Cup 2022",d:"Nov-Dec 2022",l:"Qatar",i:"mega",era:"past",r:"Argentina won - Messi's dream!",desc:"Greatest World Cup final ever. Argentina vs France 3-3 after extra time. Messi finally holds the trophy."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"FIFA World Cup 2018",d:"Jun-Jul 2018",l:"Russia",i:"mega",era:"past",r:"France won - Mbappe aged 19",desc:"France win. Mbappe scored at 19 - only 2nd teenager after Pele to score in a World Cup final."},
+  {sp:"Football",e:"⚽",c:"#2563eb",n:"FIFA World Cup 1986",d:"May-Jun 1986",l:"Mexico",i:"mega",era:"past",r:"Argentina won - Maradona",desc:"Maradona's World Cup. Hand of God AND Goal of the Century in the same match vs England."},
+  {sp:"Olympics",e:"🥇",c:"#d97706",n:"Summer Olympics 2024 - Paris",d:"Jul-Aug 2024",l:"Paris, France",i:"mega",era:"past",r:"India: 6 medals - Neeraj silver, Manu 2 medals",desc:"Neeraj silver. Manu Bhaker 2 bronze. India's best female Olympian performance."},
+  {sp:"Olympics",e:"🥇",c:"#d97706",n:"Summer Olympics 2020 - Tokyo",d:"Jul-Aug 2021",l:"Tokyo, Japan",i:"mega",era:"past",r:"India: 7 medals - Neeraj GOLD!",desc:"India's best ever Olympics. Neeraj Chopra GOLD in javelin - first track and field gold in India's history!"},
+  {sp:"Olympics",e:"🥇",c:"#d97706",n:"Summer Olympics 2008 - Beijing",d:"Aug 2008",l:"Beijing, China",i:"mega",era:"past",r:"Abhinav Bindra - India's first individual Olympic gold",desc:"Bindra wins gold in 10m air rifle. India's first ever individual Olympic gold medal."}
+];
+
+var DBP = [
+  {n:"Virat Kohli",al:["kohli","virat","king kohli","king","chikoo","18","vk","run machine"],sp:"Cricket",tm:"India",fl:"🇮🇳",bn:"5 November 1988, Delhi",rl:"Right-handed batsman",
+   st:["50+ ODI centuries - most ever","80+ international centuries","13000+ ODI runs","ICC Cricketer of the Decade"],
+   tl:[{y:"1988",t:"Born in Delhi's Uttam Nagar"},{y:"2008",t:"International debut vs Sri Lanka aged 19"},{y:"2011",t:"ODI World Cup winner with India"},{y:"2023",t:"ODI WC: record 765 runs in tournament"},{y:"2024",t:"T20 WC winner. Retired from T20Is after the final."}],
+   bio:"Virat Kohli is widely regarded as one of the greatest batsmen of all time. Born in Delhi in 1988, he became the gold standard for run-scoring in the modern era with over 80 international centuries."},
+  {n:"Sachin Tendulkar",al:["sachin","master blaster","little master","god of cricket","10","tendulkar","maestro"],sp:"Cricket",tm:"India (Retired)",fl:"🇮🇳",bn:"24 April 1973, Mumbai",rl:"Right-handed batsman",
+   st:["100 international centuries - only player ever","15921 ODI runs - all-time record","18426 Test runs","200 Test matches","World Cup winner 2011","Bharat Ratna recipient"],
+   tl:[{y:"1973",t:"Born in Dadar, Mumbai"},{y:"1989",t:"Test debut vs Pakistan aged 16 years 205 days"},{y:"1998",t:"Destroyed Shane Warne in Sharjah - two back-to-back centuries"},{y:"2011",t:"World Cup winner - career finally complete"},{y:"2012",t:"Scored his 100th international century"},{y:"2013",t:"Retired from all cricket. Bharat Ratna awarded."}],
+   bio:"Sachin Tendulkar is the God of Cricket. For 24 years he carried the hopes of a billion Indians every time he walked to the crease. His 100 international centuries is a record so far beyond anyone else that it may never be approached."},
+  {n:"MS Dhoni",al:["dhoni","msd","ms","captain cool","thala","7","mahi","helicopter man"],sp:"Cricket",tm:"CSK / India Retired",fl:"🇮🇳",bn:"7 July 1981, Ranchi",rl:"Wicket-keeper batsman",
+   st:["World Cup winner 2011","T20 WC winner 2007","5x IPL Champion with CSK","Most successful India captain"],
+   tl:[{y:"1981",t:"Born in Ranchi, worked as TTE at Kharagpur railway station"},{y:"2004",t:"International debut vs Bangladesh"},{y:"2007",t:"Led India to inaugural T20 World Cup in South Africa"},{y:"2011",t:"Legendary 91* in the World Cup final at Wankhede"},{y:"2023",t:"Led CSK to their 5th IPL title aged 41"}],
+   bio:"MS Dhoni is the most successful captain in Indian cricket history. The boy from Ranchi who worked as a ticket examiner became the only captain to win all three major ICC trophies. Captain Cool, the helicopter shot, and lightning stumpings define his legend forever."},
+  {n:"Jasprit Bumrah",al:["bumrah","jassi","jb","death over king","bumba"],sp:"Cricket",tm:"India",fl:"🇮🇳",bn:"6 December 1993, Ahmedabad",rl:"Right-arm fast bowler",
+   st:["World No.1 bowler in all formats","185+ Test wickets","T20 WC 2024 - 15 wickets","Perfect yorkers at extreme pace"],
+   tl:[{y:"1993",t:"Born in Ahmedabad, father passed away when he was 7"},{y:"2013",t:"IPL debut for Mumbai Indians"},{y:"2016",t:"International debut vs Australia"},{y:"2024",t:"T20 WC winner - 15 wickets in tournament"}],
+   bio:"Jasprit Bumrah is the most feared bowler in world cricket today. Despite an unconventional action that coaches tried to change, he became the world's No.1 bowler across all formats."},
+  {n:"Carlos Alcaraz",al:["alcaraz","carlos","carlitos","charly","3","musketeer"],sp:"Tennis",tm:"Spain",fl:"🇪🇸",bn:"5 May 2003, El Palmar, Spain",rl:"Right-handed tennis player",
+   st:["World No.2 ATP","Wimbledon champion 2023 and 2024","Roland Garros champion 2024","US Open champion 2022","Youngest World No.1 in ATP history","Olympic Gold Paris 2024"],
+   tl:[{y:"2003",t:"Born in El Palmar, Murcia"},{y:"2022",t:"Won US Open aged 19 - became World No.1"},{y:"2023",t:"Won Wimbledon vs Djokovic in 5-set thriller"},{y:"2024",t:"Won Roland Garros, Wimbledon and Olympic Gold"}],
+   bio:"Carlos Alcaraz is the most complete young tennis player the sport has ever seen. Coached by Juan Carlos Ferrero to superstardom. His rivalry with Jannik Sinner is already the defining rivalry of their generation."},
+  {n:"Jannik Sinner",al:["sinner","jannik","1","numero uno","alpine"],sp:"Tennis",tm:"Italy",fl:"🇮🇹",bn:"16 August 2001, San Candido, Italy",rl:"Right-handed baseline player",
+   st:["ATP World No.1","Australian Open champion 2024 and 2025","US Open champion 2024","3 Grand Slam titles","Davis Cup winner with Italy 2023 and 2024"],
+   tl:[{y:"2001",t:"Born in San Candido, grew up skiing in the Dolomites mountains"},{y:"2023",t:"Led Italy to Davis Cup title for first time since 1976"},{y:"2024",t:"Won Australian Open and US Open - became World No.1"},{y:"2025",t:"Won Australian Open again - dominant at the top"}],
+   bio:"Jannik Sinner grew up in the Dolomites mountains of South Tyrol. His transition to tennis at 13 was remarkably late, yet his rise to the top has been meteoric. His mental strength under pressure defines his Grand Slam victories."},
+  {n:"Novak Djokovic",al:["djokovic","novak","nole","djoker","24","the joker"],sp:"Tennis",tm:"Serbia",fl:"🇷🇸",bn:"22 May 1987, Belgrade, Serbia",rl:"Right-handed baseline player",
+   st:["24 Grand Slam titles - all-time record","437 weeks at World No.1 - all-time record","Olympic Gold Paris 2024","Career Golden Slam completed 2024"],
+   tl:[{y:"1987",t:"Born in Belgrade, practiced tennis in an empty swimming pool"},{y:"2008",t:"Won his first Grand Slam at the Australian Open"},{y:"2011",t:"Historic season - won 3 of 4 Grand Slams"},{y:"2024",t:"Won Olympic gold completing the Career Golden Slam"}],
+   bio:"Novak Djokovic is statistically the greatest tennis player of all time. Growing up in Belgrade during the NATO bombing of Yugoslavia, practicing in an empty swimming pool, his hardships forged extraordinary mental strength."},
+  {n:"Lionel Messi",al:["messi","leo","la pulga","goat","10","the flea","m10"],sp:"Football",tm:"Inter Miami / Argentina",fl:"🇦🇷",bn:"24 June 1987, Rosario, Argentina",rl:"Forward / Attacking midfielder",
+   st:["8x Ballon d'Or - all-time record","FIFA World Cup winner 2022","800+ career goals","La Liga all-time top scorer","4x Champions League winner"],
+   tl:[{y:"1987",t:"Born in Rosario, diagnosed with growth hormone deficiency aged 10"},{y:"2000",t:"Barcelona signed him, funded his treatment on a napkin"},{y:"2012",t:"Scored 91 goals in a calendar year - world record"},{y:"2022",t:"FIFA World Cup winner - career finally complete"},{y:"2024",t:"Copa America winner again, 8th Ballon d'Or"}],
+   bio:"Lionel Messi is regarded by many as the greatest footballer who ever lived. His World Cup victory in 2022 completed what many consider the greatest individual career in team sports history."},
+  {n:"Cristiano Ronaldo",al:["ronaldo","cr7","cristiano","7","siuuu","goat"],sp:"Football",tm:"Al Nassr / Portugal",fl:"🇵🇹",bn:"5 February 1985, Madeira, Portugal",rl:"Forward",
+   st:["900+ career goals - most ever","5x Ballon d'Or","5x Champions League winner","Euro 2016 winner with Portugal"],
+   tl:[{y:"1985",t:"Born in Funchal, Madeira, grew up in poverty"},{y:"2003",t:"Joined Manchester United aged 18 from Sporting Lisbon"},{y:"2016",t:"Led Portugal to Euro 2016 victory"},{y:"2023",t:"Joined Al Nassr, became first player to score 900 career goals"}],
+   bio:"Cristiano Ronaldo is the greatest scorer the sport has ever seen. Born into poverty in Madeira, he overcame a heart condition as a teenager to become the most physically complete footballer in history."},
+  {n:"Neeraj Chopra",al:["neeraj","chopra","golden boy","javelin king","golden arm","spear man"],sp:"Athletics",tm:"India",fl:"🇮🇳",bn:"24 December 1997, Panipat, Haryana",rl:"Javelin Thrower",
+   st:["Olympic Gold Tokyo 2020","Olympic Silver Paris 2024","World Champion Budapest 2023","Personal Best: 89.94m","First Indian Olympic gold in track and field"],
+   tl:[{y:"1997",t:"Born in Khandra village, Panipat, Haryana"},{y:"2011",t:"Took up javelin to lose weight aged 13"},{y:"2021",t:"Olympic gold in Tokyo - India's greatest athletics moment"},{y:"2023",t:"World Champion in Budapest"},{y:"2024",t:"Olympic Silver in Paris"}],
+   bio:"Neeraj Chopra is the pride of Indian athletics. A boy from a small farming village in Haryana who took up javelin to shed weight became an Olympic champion. He carries the hopes of over a billion Indians every time he walks onto the track."},
+  {n:"PV Sindhu",al:["sindhu","pv sindhu","pusarla","badminton queen india"],sp:"Badminton",tm:"India",fl:"🇮🇳",bn:"5 July 1995, Hyderabad",rl:"Badminton singles player",
+   st:["Olympic Silver Rio 2016","Olympic Bronze Tokyo 2020","World Champion 2019","India's most decorated female Olympian"],
+   tl:[{y:"1995",t:"Born in Hyderabad to volleyball player parents"},{y:"2016",t:"Silver at Rio Olympics - became a household name across India"},{y:"2019",t:"World Championship gold in Basel"},{y:"2020",t:"Bronze at Tokyo Olympics"}],
+   bio:"PV Sindhu is the most decorated Indian female athlete in Olympic history. Trained under legendary coach Pullela Gopichand, she inspired a generation of Indian girls to take up sport."},
+  {n:"Roger Federer",al:["federer","roger","rf","fedex","king of grass","maestro","8"],sp:"Tennis",tm:"Switzerland (Retired)",fl:"🇨🇭",bn:"8 August 1981, Basel, Switzerland",rl:"Right-handed one-handed backhand",
+   st:["20 Grand Slam titles","8x Wimbledon champion - all-time record","310 weeks at World No.1","Retired September 2022"],
+   tl:[{y:"2003",t:"Won his first Wimbledon title"},{y:"2008",t:"Lost the epic Wimbledon final to Nadal - voted greatest match ever"},{y:"2017",t:"Won Australian Open and Wimbledon aged 35"},{y:"2022",t:"Retired at Laver Cup - final match alongside Nadal in tears"}],
+   bio:"Roger Federer is the most elegant player in tennis history. His one-handed backhand and effortless movement made watching him feel like a masterclass. He made millions of people fall in love with tennis."},
+  {n:"Rafael Nadal",al:["nadal","rafa","king of clay","14","toro","the bull","matador"],sp:"Tennis",tm:"Spain (Retired)",fl:"🇪🇸",bn:"3 June 1986, Manacor, Mallorca",rl:"Left-handed heavy topspin",
+   st:["22 Grand Slam titles","14x Roland Garros - never beaten there in finals","Olympic Gold 2008","Retired October 2024"],
+   tl:[{y:"2005",t:"First Roland Garros title aged 19 - clay dynasty begins"},{y:"2008",t:"Olympic gold, won Roland Garros and Wimbledon in same year"},{y:"2022",t:"Won Australian Open and Roland Garros despite serious injury"},{y:"2024",t:"Retired at Davis Cup in Malaga - farewell on home soil"}],
+   bio:"Rafael Nadal is the greatest clay court player who ever lived. His 14 Roland Garros titles with a 112-4 record at the venue is one of the most dominant relationships between a player and a surface in sport history."},
+  {n:"Max Verstappen",al:["verstappen","max","mad max","1","super max","mv1","dutch lion"],sp:"Formula 1",tm:"Red Bull Racing",fl:"🇳🇱",bn:"30 September 1997, Hasselt, Belgium",rl:"Formula 1 Driver",
+   st:["4x F1 World Champion 2021 to 2024","Record 19 wins in a single season 2023","60+ race wins","Youngest F1 race winner ever at 17"],
+   tl:[{y:"2015",t:"F1 debut with Toro Rosso aged 17 - youngest driver ever"},{y:"2016",t:"Won on debut for Red Bull at the Spanish GP"},{y:"2021",t:"First World Championship - dramatic final lap in Abu Dhabi"},{y:"2023",t:"Won 19 of 22 races - most dominant F1 season in history"}],
+   bio:"Max Verstappen was born to race. His father Jos put him in a kart at age 4 and drove him across Europe every weekend. Four consecutive World Championships place him among the greatest drivers of all time."},
+  {n:"Michael Jordan",al:["jordan","mj","air jordan","23","his airness","goat basketball","mike"],sp:"Basketball",tm:"Chicago Bulls / USA",fl:"🇺🇸",bn:"17 February 1963, Brooklyn, New York",rl:"Shooting Guard",
+   st:["6x NBA Champion","6x Finals MVP","5x Regular Season MVP","30.1 career scoring average - highest ever","Olympic Gold 1984 and 1992 Dream Team"],
+   tl:[{y:"1984",t:"Drafted 3rd overall by Chicago Bulls, won Olympic Gold"},{y:"1991",t:"First NBA Championship"},{y:"1993",t:"3rd consecutive title then shock retirement - father was murdered"},{y:"1998",t:"6th title - The Last Dance season immortalised in Netflix documentary"}],
+   bio:"Michael Jordan is the greatest basketball player of all time. Six championships, six Finals MVPs, and a 30.1 career scoring average tell part of the story. Jordan was a competitor unlike any other."}
+];
+
+var DBT = [
+  {n:"India",al:["team india","bcci","india cricket","indian cricket"],sp:"Cricket",fl:"🇮🇳",fd:"1932",st:["T20 WC winners 2024","ODI WC winners 2011","World No.1 Test team"],bio:"India is the superpower of world cricket with over a billion fans and the IPL generating billions in revenue."},
+  {n:"Mumbai Indians",al:["mi","mumbai","paltan","blue army","5 times"],sp:"Cricket (IPL)",fl:"🔵",fd:"2008",st:["5x IPL Champions","Most successful IPL franchise","Rohit Sharma captain"],bio:"Mumbai Indians are the most successful IPL franchise with five titles. Owned by Reliance Industries."},
+  {n:"Chennai Super Kings",al:["csk","chennai","yellow army","thala team","whistle podu"],sp:"Cricket (IPL)",fl:"🟡",fd:"2008",st:["5x IPL Champions","Most consistent franchise","MS Dhoni captain"],bio:"CSK are the most consistent IPL team. Built around Dhoni's calm captaincy, their yellow jerseys are iconic."},
+  {n:"Real Madrid",al:["real madrid","rm","madrid","los blancos","hala madrid","galacticos"],sp:"Football",fl:"⚪",fd:"1902",st:["15x Champions League - most ever","35x La Liga","FIFA Club of the Century"],bio:"Real Madrid is the most successful club in football history with 15 UCL titles."},
+  {n:"Barcelona",al:["barcelona","barca","fcb","blaugrana","mes que un club"],sp:"Football",fl:"🔵",fd:"1899",st:["5x Champions League","27x La Liga","La Masia produced Messi Xavi Iniesta Yamal"],bio:"FC Barcelona is more than a club - a symbol of Catalan identity. La Masia academy produced the world's greatest player in Messi."}
+];
+
+function timeAgo(t){var d=Math.floor((Date.now()-t)/60000);if(d<1)return"Just now";if(d<60)return d+"m ago";if(d<1440)return Math.floor(d/60)+"h ago";return Math.floor(d/1440)+"d ago";}
+function countdown(ms){if(!ms)return null;var diff=ms-Date.now();if(diff<=0)return null;var h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);if(h>0)return String(h).padStart(2,"0")+"h : "+String(m).padStart(2,"0")+"m";return String(m).padStart(2,"0")+"m : "+String(s).padStart(2,"0")+"s";}
+function getNews(s){if(s==="all"||s==="news"){var seen={},out=[];(NEWS.all||[]).concat(Object.values(NEWS).reduce(function(a,b){return a.concat(b);},[]) ).forEach(function(a){if(!seen[a.title]){seen[a.title]=1;out.push(a);}});return out;}return(NEWS[s]||[]).concat(NEWS.all||[]);}
+
+function buildBanner(){
+  var live=[];
+  Object.keys(M).forEach(function(sp){M[sp].forEach(function(g){g.ms.forEach(function(m){if(m.st==="live")live.push({m:m,sp:sp,sr:g.sr});});});});
+  var b=document.getElementById("livebanner"),p=document.getElementById("livepill");
+  if(!live.length){b.style.display="none";p.style.display="none";return;}
+  p.style.display="flex";document.getElementById("livecount").textContent=live.length+" Live";
+  var html='<div class="lbhdr"><div class="ldot"></div><div class="lbhdr-txt">Live Now - '+live.length+' Match'+(live.length>1?"es":"")+'</div></div><div class="lbscroll">';
+  live.forEach(function(x,i){
+    var m=x.m;
+    var sc=(m.hs&&m.as)?(m.hs+" - "+m.as):(m.hs||"In Progress");
+    html+='<div class="lbcard" data-idx="'+i+'" onclick="openLiveCard(this)"><div class="lbsport">'+x.sp+'</div><div class="lbmatch">'+m.h+' <span class="lbsc">'+sc+'</span> '+m.a+'</div><div class="lbsr">'+x.sr+'</div></div>';
+  });
+  html+="</div>";
+  b.innerHTML=html;b.style.display="block";
+  window._live=live;
+  // Ticker
+  var all=[];Object.keys(M).forEach(function(sp){M[sp].forEach(function(g){g.ms.forEach(function(m){all.push(m.h+" vs "+m.a);});});});
+  var tw=document.getElementById("ticker-wrap"),tt=document.getElementById("ticker-track");
+  if(all.length){tw.style.display="flex";var d=all.concat(all);tt.innerHTML=d.map(function(i){return'<span class="ticker-item">'+i+'</span>';}).join("");}
+}
+
+function openLiveCard(el){var i=parseInt(el.dataset.idx);var x=window._live[i];if(x)openMatch(x.sp,x.sr,0);}
+function scrollToLive(){document.getElementById("livebanner").scrollIntoView({behavior:"smooth"});}
+
+function render(){
+  var root=document.getElementById("root");
+  if(curSport==="schedule"){renderSch();return;}
+  if(curSport==="news"){var h='<div class="date-hdr">All Sports News</div>';getNews("news").forEach(function(a,i){h+=nCard(a,i);});root.innerHTML=h;return;}
+  var sports=curSport==="all"?Object.keys(M):[curSport];
+  var h='<div class="date-hdr">Today, '+TODAY.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+"</div>";
+  var any=false;
+  sports.forEach(function(sp){
+    (M[sp]||[]).forEach(function(grp){
+      if(!grp.ms||!grp.ms.length)return;any=true;
+      var key=sp+"::"+grp.sr;var showAll=expanded[key];
+      var toShow=showAll?grp.ms:grp.ms.slice(0,2);var extra=grp.ms.length-2;
+      var ns=notifs[key];
+      h+='<div class="mgroup"><div class="sbar"><div class="snm">'+grp.sr+'</div><div class="nstar'+(ns?" on":"")+'\" data-key="'+key+'" onclick="toggleN(this)">'+(ns?"🔔":"🔕")+'</div></div>';
+      toShow.forEach(function(m,i){h+=mRow(m,sp,grp.sr,i);});
+      if(!showAll&&extra>0)h+='<div class="morebtn" data-key="'+key+'" onclick="expandG(this)">+'+extra+' More Match'+(extra>1?"es":"")+"</div>";
+      h+="</div>";
+    });
+  });
+  if(!any)h+='<div style="text-align:center;padding:40px;color:var(--muted)">No matches today</div>';
+  var lbl=curSport==="all"?"Latest News":curSport+" News";
+  h+='<div class="nhdr">'+lbl+'</div>';getNews(curSport).slice(0,4).forEach(function(a,i){h+=nCard(a,i);});
+  root.innerHTML=h;startCDs();
+}
+
+function mRow(m,sp,sr,idx){
+  var hasSc=m.hs&&m.hs.length>0;var c=m.st==="upcoming"?countdown(m.ms2):null;
+  var st="";
+  if(m.st==="live")st='<div class="livebdg">LIVE</div>';
+  else if(m.st==="finished")st='<div class="ftlbl">Full Time</div>';
+  else if(c)st='<div class="cdlbl">Starting in:</div><div class="cdval" data-ms="'+m.ms2+'">'+c+"</div>";
+  else st='<div class="datelbl">Upcoming</div>';
+  return '<div class="mrow" data-sp="'+sp+'" data-sr="'+sr+'" data-idx="'+idx+'" onclick="openMatchEl(this)">'
+    +'<div class="tcol"><div class="tr"><div class="flg">'+m.hf+'</div><span class="tnm">'+m.h+'</span>'+(hasSc&&m.hs?'<span class="tsc">'+m.hs+"</span>":"")+"</div>"
+    +'<div class="tr"><div class="flg">'+m.af+'</div><span class="tnm">'+m.a+"</span>"+(hasSc&&m.as?'<span class="tsc">'+m.as+"</span>":"")+"</div>"
+    +'</div><div class="vd"></div><div class="scol">'+st+"</div></div>";
+}
+
+function openMatchEl(el){openMatch(el.dataset.sp,el.dataset.sr,parseInt(el.dataset.idx));}
+
+function nCard(a,i){return'<div class="ncard" data-idx="'+i+'" onclick="openNewsEl(this)"><div class="nsrc">'+a.source+'</div><div class="nttl">'+a.title+'</div><div class="ndsc">'+a.desc+'</div><div class="nft">'+timeAgo(a.t)+"</div></div>";}
+function openNewsEl(el){openNews(parseInt(el.dataset.idx));}
+
+function openMatch(sp,sr,idx){
+  var grp=(M[sp]||[]).find(function(g){return g.sr===sr;});if(!grp)return;
+  var m=grp.ms[idx];if(!m)return;var d=m.d||{};
+  var hasSc=m.hs&&m.as&&m.st!=="upcoming";var c=m.st==="upcoming"?countdown(m.ms2):null;
+  var h2h=d.h2h||{hw:0,dr:0,aw:0,t:0};var tot=h2h.t||1;
+  var hwp=Math.round(h2h.hw/tot*100),dp=Math.round(h2h.dr/tot*100),awp=100-hwp-dp;
+  var badge=m.st==="live"?'<span class="md-live">LIVE</span>':m.st==="finished"?'<span class="md-ft">'+(d.result||"FULL TIME")+"</span>":'<span class="md-upcoming">UPCOMING</span>';
+  var scoreBl="";
+  if(hasSc)scoreBl='<div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div class="md-sc">'+m.hs+'</div><div class="md-vs">VS</div><div class="md-sc">'+m.as+"</div></div>";
+  else if(c)scoreBl='<div style="text-align:center"><div style="font-size:10px;color:var(--muted)">Starting in:</div><div class="md-cd" id="mdcd" data-ms="'+m.ms2+'">'+c+"</div></div>";
+  else scoreBl='<div class="md-vs">VS</div>';
+  var perfs=(d.perf||[]).map(function(p,i){return'<div class="prow"><div class="prank">'+(i+1)+'</div><div style="flex:1"><div class="pname">'+p.n+'</div><div class="pteam">'+p.tm+"</div></div>"+'<div class="pstat">'+p.s+"</div></div>";}).join("");
+  var comms=(d.comm||[]).map(function(c){return'<div class="citem"><div class="cover">'+c.o+'</div><div class="ctxt">'+c.t+"</div></div>";}).join("");
+  var html='<div style="padding:0 16px"><div class="md-series">'+grp.sr+'</div><div class="md-srow">'+badge+"</div>"
+    +'<div class="md-sb"><div class="md-team"><div class="md-flag">'+m.hf+'</div><div class="md-tnm">'+m.h+"</div></div>"+scoreBl+'<div class="md-team"><div class="md-flag">'+m.af+'</div><div class="md-tnm">'+m.a+"</div></div></div></div>"
+    +'<div class="md-sec"><div class="md-sec-t">Match Info</div>'
+    +'<div class="md-row"><span class="md-lbl">Venue</span><span class="md-val">'+(d.venue||"TBD")+"</span></div>"
+    +'<div class="md-row"><span class="md-lbl">Date</span><span class="md-val">'+(d.date||"TBD")+"</span></div>"
+    +'<div class="md-row"><span class="md-lbl">Time</span><span class="md-val">'+(d.time||"TBD")+"</span></div>"
+    +'<div class="md-row"><span class="md-lbl">Format</span><span class="md-val">'+(d.fmt||"TBD")+"</span></div>"
+    +(d.result?'<div class="md-row"><span class="md-lbl">Result</span><span class="md-val" style="color:var(--green)">'+d.result+"</span></div>":"")
+    +"</div>";
+  if(h2h.t>0)html+='<div class="md-sec"><div class="md-sec-t">Head to Head ('+h2h.t+' matches)</div><div class="h2h-wrap"><div class="h2h-names"><span style="color:var(--blue)">'+m.h+'</span><span style="color:var(--muted)">Draws</span><span style="color:var(--orange)">'+m.a+'</span></div><div class="h2h-bar"><div class="h2h-home" style="width:'+hwp+'%"></div><div class="h2h-draw" style="width:'+dp+'%"></div><div class="h2h-away" style="width:'+awp+'%"></div></div><div class="h2h-nums"><span style="color:var(--blue)">'+h2h.hw+" W</span>"+'<span style="color:var(--muted)">'+h2h.dr+" D</span>"+'<span style="color:var(--orange)">'+h2h.aw+" W</span></div></div></div>";
+  if(perfs)html+='<div class="md-sec"><div class="md-sec-t">Key Players</div>'+perfs+"</div>";
+  if(d.prev)html+='<div class="md-sec"><div class="md-sec-t">Preview</div><div style="padding:12px 14px;font-size:14px;color:var(--sub);line-height:1.7">'+d.prev+"</div></div>";
+  if(comms)html+='<div class="cbox"><div class="chdr"><div class="chdr-t">Commentary'+(m.st==="live"?" LIVE":"")+"</div></div>"+'<div class="clist">'+comms+"</div>"+(m.st==="live"?'<div class="cinp-wrap"><input class="cinp" id="cinp" placeholder="Add your reaction..." maxlength="100"><button class="csend" onclick="sendC()">Send</button></div>':"")+"</div>";
+  document.getElementById("mbody").innerHTML=html;openModal();
+  if(c){clearInterval(window._mcd);window._mcd=setInterval(function(){var el=document.getElementById("mdcd");if(!el){clearInterval(window._mcd);return;}var v=countdown(parseInt(el.dataset.ms));el.textContent=v||"Starting soon";},1000);}
+}
+
+function sendC(){var inp=document.getElementById("cinp");var val=inp.value.trim();if(!val)return;var list=document.querySelector(".clist");var div=document.createElement("div");div.className="citem";div.innerHTML='<div class="cover">You - Just now</div><div class="ctxt">'+val+"</div>";list.prepend(div);inp.value="";}
+function openNews(i){var a=getNews(curSport)[i];if(!a)return;document.getElementById("mbody").innerHTML='<div style="padding:20px 16px"><div class="nsrc">'+a.source+'</div><div style="font-family:Bebas Neue;font-size:26px;color:var(--text);line-height:1.15;margin:8px 0">'+a.title+'</div><div style="font-size:11px;color:var(--muted);margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">'+timeAgo(a.t)+'</div><div style="font-size:15px;line-height:1.75;color:var(--sub)">'+a.desc+"</div></div>";openModal();}
+
+function renderSch(){
+  var root=document.getElementById("root");
+  var sports=["All"].concat([...new Set(SCHEDULE.map(function(s){return s.sp;}))]);
+  var filtered=SCHEDULE;
+  if(schEra!=="all")filtered=filtered.filter(function(s){return s.era===schEra;});
+  if(schSp!=="All")filtered=filtered.filter(function(s){return s.sp===schSp;});
+  var byYear={};filtered.forEach(function(s){var m=s.d.match(/\d{4}/);var y=m?m[0]:"2026";if(!byYear[y])byYear[y]=[];byYear[y].push(s);});
+  var sortedY=Object.keys(byYear).sort(function(a,b){return schEra==="past"?b-a:a-b;});
+  var h='<div class="schbtn-wrap">';
+  [{k:"future",l:"Upcoming"},{k:"past",l:"History"},{k:"all",l:"All Time"}].forEach(function(e){h+='<div class="schbtn'+(schEra===e.k?" active":"")+'\" data-k="'+e.k+'" onclick="setEra(this)">'+e.l+"</div>";});
+  h+='</div><div class="schbtn-wrap">';
+  sports.forEach(function(sp){h+='<div class="schbtn'+(schSp===sp?" active":"")+'\" data-sp="'+sp+'" onclick="setSchSp(this)">'+sp+"</div>";});
+  h+='</div><div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600">'+filtered.length+" tournaments</div>";
+  if(!filtered.length)h+='<div style="text-align:center;padding:40px;color:var(--muted)">No tournaments found</div>';
+  else sortedY.forEach(function(y){h+='<div class="schyear">'+(schEra==="past"?"Trophy":"Calendar")+" "+y+"</div>";byYear[y].forEach(function(s){var ic=s.i==="mega"?"sch-mega":"sch-major";var it=s.i==="mega"?"MEGA":"MAJOR";h+='<div class="schcard"><div class="schtop"><span class="schtag" style="background:'+s.c+'">'+s.e+" "+s.sp+"</span>"+'<span class="schimp '+ic+'">'+it+"</span></div>"+'<div class="schnm">'+s.n+'</div><div class="schinfo"><span>'+s.d+'</span><span>'+s.l+'</span></div>'+(s.era==="past"&&s.r?'<div class="schresult">'+s.r+"</div>":"")+'<div class="schdesc">'+s.desc+"</div></div>";});});
+  root.innerHTML=h;
+}
+
+function setEra(el){schEra=el.dataset.k;renderSch();}
+function setSchSp(el){schSp=el.dataset.sp;renderSch();}
+
+function onSearch(val){
+  var sc=document.getElementById("sclear"),sugg=document.getElementById("sugg"),sr=document.getElementById("sresults"),root=document.getElementById("root");
+  sc.style.display=val?"block":"none";
+  if(!val||!val.trim()){sugg.style.display="none";sr.style.display="none";root.style.display="block";return;}
+  root.style.display="none";var q=val.toLowerCase().trim();
+  if(val.trim().length<=3){
+    var mx=DBP.concat(DBT).filter(function(x){return x.n.toLowerCase().startsWith(q)||x.n.toLowerCase().includes(q)||(x.al||[]).some(function(a){return a.toLowerCase().startsWith(q);});}).slice(0,6);
+    if(mx.length){sugg.style.display="block";sr.style.display="none";sugg.innerHTML=mx.map(function(p){return'<div class="sugg-item" data-nm="'+p.n+'" onclick="pickS(this)"><div style="width:28px;height:28px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">'+p.fl+'</div><div><div style="font-size:13px;font-weight:700;color:var(--text)">'+p.n+'</div><div style="font-size:11px;color:var(--muted)">'+p.sp+(p.tm?" - "+p.tm:"")+"</div></div></div>";}).join("");}
+    else sugg.style.display="none";return;
+  }
+  sugg.style.display="none";sr.style.display="block";
+  var pl=DBP.filter(function(p){return p.n.toLowerCase().includes(q)||p.sp.toLowerCase().includes(q)||p.tm.toLowerCase().includes(q)||(p.al||[]).some(function(a){return a.toLowerCase().includes(q)||q.includes(a.toLowerCase());});});
+  var tm=DBT.filter(function(t){return t.n.toLowerCase().includes(q)||t.sp.toLowerCase().includes(q)||(t.al||[]).some(function(a){return a.toLowerCase().includes(q);});});
+  if(!pl.length&&!tm.length){sr.innerHTML='<div class="sr-empty">No results for "'+val+'"<br><small>Try: Virat Kohli, CR7, Thala, Real Madrid, 7...</small></div>';return;}
+  var h="";
+  if(pl.length){h+='<div class="sr-sec">Players ('+pl.length+")</div>";pl.slice(0,8).forEach(function(p){h+='<div class="sr-card" data-type="p" data-nm="'+p.n+'" onclick="openWikiEl(this)"><div style="width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+p.fl+'</div><div style="flex:1"><div class="sr-nm">'+p.n+'</div><div class="sr-info">'+p.sp+" - "+p.tm+"</div></div></div>";});}
+  if(tm.length){h+='<div class="sr-sec" style="margin-top:8px">Teams ('+tm.length+")</div>";tm.slice(0,4).forEach(function(t){h+='<div class="sr-card" data-type="t" data-nm="'+t.n+'" onclick="openWikiEl(this)"><div style="width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+t.fl+'</div><div style="flex:1"><div class="sr-nm">'+t.n+'</div><div class="sr-info">'+t.sp+"</div></div></div>";});}
+  sr.innerHTML=h;
+}
+
+function pickS(el){document.getElementById("sinput").value=el.dataset.nm;document.getElementById("sugg").style.display="none";var p=DBP.find(function(x){return x.n===el.dataset.nm;});var t=DBT.find(function(x){return x.n===el.dataset.nm;});if(p)openWiki("p",p.n);else if(t)openWiki("t",t.n);}
+function openWikiEl(el){openWiki(el.dataset.type,el.dataset.nm);}
+function clearSearch(){document.getElementById("sinput").value="";document.getElementById("sclear").style.display="none";document.getElementById("sugg").style.display="none";document.getElementById("sresults").style.display="none";document.getElementById("root").style.display="block";}
+
+function openWiki(type,name){
+  var data=type==="p"?DBP.find(function(x){return x.n===name;}):DBT.find(function(x){return x.n===name;});if(!data)return;
+  var h='<div class="wiki-hero"><div class="wiki-top"><div class="wiki-flag">'+data.fl+'</div><div><div class="wiki-name">'+data.n+'</div><div class="wiki-sport">'+data.sp+"</div>"+(data.tm?'<div style="font-size:12px;color:var(--muted)">'+data.tm+"</div>":"")+(data.bn?'<div style="font-size:11px;color:var(--muted);margin-top:4px">Born: '+data.bn+"</div>":"")+(data.rl?'<div style="font-size:11px;color:var(--muted);margin-top:2px">Role: '+data.rl+"</div>":"")+"</div></div>"+(data.bio?'<div class="wiki-bio">'+data.bio+"</div>":"")+"</div>";
+  if(data.st)h+='<div style="margin:0 12px 10px"><div class="wiki-sec">Career Highlights</div><div style="background:var(--bg);border-radius:12px;border:1px solid var(--border);overflow:hidden">'+data.st.map(function(s,i){return'<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:'+(i<data.st.length-1?"1px solid rgba(232,234,239,.6)":"none")+'"><span style="color:var(--accent);font-size:14px;flex-shrink:0">*</span><span style="font-size:13px;color:var(--text);font-weight:500">'+s+"</span></div>";}).join("")+"</div></div>";
+  if(data.tl)h+='<div style="margin:0 12px 10px"><div class="wiki-sec">Career Timeline</div><div class="wiki-tl">'+data.tl.map(function(tl){return'<div class="wiki-tl-item"><div class="wiki-year">'+tl.y+'</div><div class="wiki-text">'+tl.t+"</div></div>";}).join("")+"</div></div>";
+  // Add favourite button
+  h += '<div style="margin:0 12px 16px"><div style="background:var(--accent);color:#fff;border-radius:12px;padding:12px;text-align:center;cursor:pointer;font-weight:700;font-size:14px" onclick="addFavCurrent()">&#11088; Add to Favourites</div></div>';
+  document.getElementById("mbody").innerHTML=h;openModal();
+}
+
+function openNotif(){
+  var items=[];Object.keys(M).forEach(function(sp){M[sp].forEach(function(g){g.ms.forEach(function(m){if(m.st==="live"||m.st==="upcoming")items.push({key:sp+"::"+g.sr,label:m.h+" vs "+m.a,sr:g.sr});});});});
+  var h='<div class="ntf-modal"><div class="ntf-hdr">Notifications</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">Get notified when matches start or have score updates</div>';
+  items.forEach(function(item){var on=!!notifs[item.key];h+='<div class="ntf-item"><div><div class="ntf-label">'+item.label+'</div><div class="ntf-sub">'+item.sr+'</div></div><div class="toggle'+(on?" on":"")+'\" data-key="'+item.key+'" onclick="toggleNEl(this)"><div class="tdot"></div></div></div>';});
+  h+='<div style="margin-top:16px;padding:14px;background:var(--bg);border-radius:12px;font-size:12px;color:var(--muted)">Tip: Tap the bell icon next to any match series to enable notifications.</div></div>';
+  document.getElementById("mbody").innerHTML=h;openModal();
+}
+
+function toggleN(el){
+  var key=el.dataset.key;notifs[key]=!notifs[key];
+  el.textContent=notifs[key]?"🔔":"🔕";el.classList.toggle("on",notifs[key]);
+  updateBadge();showToast(notifs[key]?"Notifications ON for this match!":"Notifications off");
+}
+function toggleNEl(el){
+  var key=el.dataset.key;notifs[key]=!notifs[key];
+  el.classList.toggle("on",notifs[key]);
+  updateBadge();showToast(notifs[key]?"Notifications ON!":"Notifications off");
+}
+function updateBadge(){var c=Object.values(notifs).filter(Boolean).length;document.getElementById("nbadge").style.display=c>0?"block":"none";}
+function showToast(msg){var t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},2500);}
+
+function openModal(){document.getElementById("mbg").classList.add("open");document.body.style.overflow="hidden";}
+function closeModal(){document.getElementById("mbg").classList.remove("open");document.body.style.overflow="";clearInterval(window._mcd);}
+function bgClick(e){if(e.target===document.getElementById("mbg"))closeModal();}
+function expandG(el){expanded[el.dataset.key]=true;render();}
+function go(s){curSport=s;expanded={};document.querySelectorAll(".sport-btn").forEach(function(b){b.classList.toggle("active",b.dataset.s===s);});clearSearch();render();}
+function startCDs(){clearInterval(window._cd);window._cd=setInterval(function(){document.querySelectorAll(".cdval").forEach(function(el){var v=countdown(parseInt(el.dataset.ms));if(v)el.textContent=v;});},1000);}
+
+
+
+// ── BOTTOM NAV ──
+var BIG_EVENT = {icon:"🏆",label:"WC26",sp:"Soccer",desc:"FIFA World Cup 2026 — Starting Soon!"};
+
+function bnGo(tab, el) {
+  document.querySelectorAll('.bn-item').forEach(function(b){b.classList.remove('active');});
+  if(el) el.classList.add('active');
+  if(tab==='home'){closeModal();go('all');}
+  else if(tab==='fav'){openFavourites();}
+  else if(tab==='live'){scrollToLive();closeModal();}
+  else if(tab==='search'){
+    closeModal();
+    document.getElementById('sinput').focus();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  else if(tab==='profile'){openProfile();}
+}
+
+function bnTournament() {
+  openBigEvent();
+}
+
+function openBigEvent() {
+  document.getElementById('mbody').innerHTML =
+    '<div style="padding:20px 16px">' +
+    '<div style="text-align:center;margin-bottom:16px">' +
+    '<div style="font-size:60px;margin-bottom:8px">🏆</div>' +
+    '<div style="font-family:Bebas Neue;font-size:32px;color:var(--text);letter-spacing:2px">FIFA World Cup 2026</div>' +
+    '<div style="font-size:13px;color:var(--accent);font-weight:700;margin-top:4px">Starting June 2026 — USA, Canada & Mexico</div>' +
+    '</div>' +
+    '<div style="background:var(--bg);border-radius:12px;border:1px solid var(--border);overflow:hidden">' +
+    '<div style="padding:12px 14px;border-bottom:1px solid var(--border);background:#fff"><div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Tournament Info</div></div>' +
+    '<div style="padding:10px 14px;border-bottom:1px solid rgba(232,234,239,.6)"><div style="font-size:12px;color:var(--muted)">Teams</div><div style="font-size:14px;font-weight:700">48 Teams — First expanded World Cup</div></div>' +
+    '<div style="padding:10px 14px;border-bottom:1px solid rgba(232,234,239,.6)"><div style="font-size:12px;color:var(--muted)">Hosts</div><div style="font-size:14px;font-weight:700">USA 🇺🇸 Canada 🇨🇦 Mexico 🇲🇽</div></div>' +
+    '<div style="padding:10px 14px;border-bottom:1px solid rgba(232,234,239,.6)"><div style="font-size:12px;color:var(--muted)">India</div><div style="font-size:14px;font-weight:700;color:var(--green)">QUALIFIED for first time ever! 🇮🇳</div></div>' +
+    '<div style="padding:10px 14px"><div style="font-size:12px;color:var(--muted)">Stars</div><div style="font-size:14px;font-weight:700">Mbappe · Vinicius · Yamal · Messi</div></div>' +
+    '</div>' +
+    '<div style="margin-top:14px;background:linear-gradient(135deg,#fff5f5,#ffe8e8);border-radius:12px;padding:14px;border:1px solid #fecaca">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px">India in the World Cup!</div>' +
+    '<div style="font-size:13px;color:var(--sub);line-height:1.6">India qualified for the FIFA World Cup 2026 for the FIRST TIME EVER by beating Bahrain 2-1 in Kolkata. Chhetri scored in his farewell match. Historic night for Indian football!</div>' +
+    '</div>' +
+    '</div>';
+  openModal();
+}
+
+var favourites = [];
+function openFavourites() {
+  var html = '<div style="padding:20px 16px">' +
+    '<div style="font-family:Bebas Neue;font-size:26px;color:var(--text);margin-bottom:16px">⭐ My Favourites</div>' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Save players and teams from the Search tab</div>';
+  if(favourites.length === 0) {
+    html += '<div style="text-align:center;padding:40px;color:var(--muted)">' +
+      '<div style="font-size:40px;margin-bottom:12px">⭐</div>' +
+      '<div style="font-size:14px;font-weight:700;margin-bottom:6px">No favourites yet</div>' +
+      '<div style="font-size:13px">Tap the bell 🔕 next to any match to follow it. Tap ⭐ on players/teams to save them here.</div>' +
+      '</div>';
+  } else {
+    favourites.forEach(function(f,i) {
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border-radius:10px;margin-bottom:8px;border:1px solid var(--border)">' +
+        '<div style="font-size:22px">'+f.icon+'</div>' +
+        '<div style="flex:1"><div style="font-size:14px;font-weight:700">'+f.name+'</div><div style="font-size:11px;color:var(--muted)">'+f.type+'</div></div>' +
+        '<div style="font-size:18px;cursor:pointer" data-idx="'+i+'" onclick="removeFav(parseInt(this.dataset.idx))">✕</div>' +
+        '</div>';
+    });
+  }
+  html += '<div style="margin-top:16px;padding:14px;background:var(--bg);border-radius:12px;font-size:12px;color:var(--muted)">💡 Search for any player or team and tap the star to add to favourites.</div></div>';
+  document.getElementById('mbody').innerHTML = html;
+  openModal();
+}
+
+function removeFav(i) {
+  favourites.splice(i,1);
+  openFavourites();
+}
+
+function addFavCurrent() {
+  if(window._wikiData) {
+    addFav(window._wikiData.n, window._wikiData.sp, window._wikiData.fl);
+  }
+}
+function addFav(name, type, icon) {
+  if(!favourites.find(function(f){return f.name===name;})) {
+    favourites.push({name:name,type:type,icon:icon});
+    showToast('⭐ Added to Favourites!');
+  } else {
+    showToast('Already in Favourites!');
+  }
+}
+
+function openProfile() {
+  var favCount = favourites.length;
+  var notifCount = Object.values(notifs).filter(Boolean).length;
+  var n1 = notifs["setting_notification"] ? " on" : "";
+  var n2 = notifs["setting_alerts"] ? " on" : "";
+  var html = '<div style="padding:20px 16px">';
+  html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">';
+  html += '<div style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#e63946,#ff6b00);display:flex;align-items:center;justify-content:center;font-size:30px">👤</div>';
+  html += '<div><div style="font-family:Bebas Neue;font-size:26px;color:var(--text);letter-spacing:1px">SportWiki User</div>';
+  html += '<div style="font-size:12px;color:var(--muted)">Sports fan since Day 1</div></div></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
+  html += '<div style="background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border);cursor:pointer" onclick="closeModal();openFavourites()">';
+  html += '<div style="font-family:Bebas Neue;font-size:28px;color:var(--accent)">' + favCount + '</div>';
+  html += '<div style="font-size:12px;color:var(--muted);font-weight:600">FAVOURITES</div></div>';
+  html += '<div style="background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)">';
+  html += '<div style="font-family:Bebas Neue;font-size:28px;color:var(--green)">' + notifCount + '</div>';
+  html += '<div style="font-size:12px;color:var(--muted);font-weight:600">ALERTS ON</div></div></div>';
+  html += '<div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px">';
+  html += '<div style="padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border)"><div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px">SETTINGS</div></div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(232,234,239,.6)">';
+  html += '<div><div style="font-size:14px;font-weight:600">🔔 Notifications</div><div style="font-size:11px;color:var(--muted)">Match start alerts</div></div>';
+  html += '<div class="toggle' + n1 + '" data-key="setting_notification" onclick="toggleNEl(this)"><div class="tdot"></div></div></div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px">';
+  html += '<div><div style="font-size:14px;font-weight:600">📱 Score Alerts</div><div style="font-size:11px;color:var(--muted)">Live score updates</div></div>';
+  html += '<div class="toggle' + n2 + '" data-key="setting_alerts" onclick="toggleNEl(this)"><div class="tdot"></div></div></div>';
+  html += '</div>';
+  html += '<div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px">';
+  html += '<div style="padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border)"><div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px">ABOUT</div></div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(232,234,239,.6);cursor:pointer" onclick="shareApp()">';
+  html += '<span style="font-size:14px;font-weight:600">🔗 Share SportWiki</span><span style="color:var(--blue)">›</span></div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(232,234,239,.6)">';
+  html += '<span style="font-size:14px;font-weight:600">📄 Privacy Policy</span><span style="color:var(--muted)">›</span></div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px">';
+  html += '<span style="font-size:14px;font-weight:600">📧 Send Feedback</span><span style="color:var(--muted)">›</span></div>';
+  html += '</div>';
+  html += '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">';
+  html += '<div style="font-family:Bebas Neue;font-size:18px;color:var(--accent);letter-spacing:2px">SportWiki</div>';
+  html += '<div>Watch It · Know It · Live It · v1.0</div></div></div>';
+  document.getElementById("mbody").innerHTML = html;
+  openModal();
+}
+
+
+function openSettings() { openProfile(); }
+
+function settingRow(icon, title, sub, key) {
+  var on = notifs['setting_'+key] || false;
+  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(232,234,239,.6);background:#fff">' +
+    '<div><div style="font-size:14px;font-weight:600">'+icon+' '+title+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+sub+'</div></div>' +
+    '<div class="toggle'+(on?' on':'')+'" data-key="setting_'+key+'" onclick="toggleNEl(this)"><div class="tdot"></div></div>' +
+    '</div>';
+}
+
+function shareApp() {
+  if(navigator.share) {
+    navigator.share({title:'SportWiki',text:'Watch It, Know It, Live It!',url:window.location.href});
+  } else {
+    showToast('Share: SportWiki - Watch It Know It!');
+  }
+}
+
+buildBanner();render();
+
+</script>
+
+<div class="bottom-nav" id="bottom-nav">
+  <div class="bn-item active" id="bn-home" onclick="bnGo('home',this)">
+    <div class="bn-icon">🏠</div>
+    <div class="bn-label">HOME</div>
+  </div>
+  <div class="bn-item" id="bn-fav" onclick="bnGo('fav',this)">
+    <div class="bn-icon">⭐</div>
+    <div class="bn-label">FAVES</div>
+  </div>
+  <div class="bn-center" onclick="bnGo('live',this)">
+    <div class="bn-center-inner">
+      <div class="bn-center-icon">⚡</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:var(--accent);text-align:center;margin-top:3px;letter-spacing:.5px">LIVE</div>
+  </div>
+  <div class="bn-item" id="bn-search" onclick="bnGo('search',this)">
+    <div class="bn-icon">🔍</div>
+    <div class="bn-label">SEARCH</div>
+  </div>
+  <div class="bn-item" id="bn-profile" onclick="bnGo('profile',this)">
+    <div class="bn-icon">👤</div>
+    <div class="bn-label">PROFILE</div>
+  </div>
+</div>
+
+</body>
+</html>
